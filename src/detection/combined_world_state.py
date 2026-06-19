@@ -1,12 +1,15 @@
 import cv2
 import math
+import sys
 from pathlib import Path
 from ultralytics import YOLO
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+SRC_ROOT = PROJECT_ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
 
-BALL_MODEL_PATH = PROJECT_ROOT / "runs" / "detect" / "ball_v6_yolov8s_960" / "weights" / "best.pt"
-PLAYER_MODEL_PATH = PROJECT_ROOT / "runs" / "detect" / "player_detector_v1-6" / "weights" / "best.pt"
+from config.model_paths import BALL_MODEL_PATH, PLAYER_MODEL_PATH
 
 VIDEO_PATH = PROJECT_ROOT / "EA SPORTS FIFA 15 2026-05-27 18-28-58.mp4"
 OUTPUT_VIDEO = PROJECT_ROOT / "results" / "videos" / "combined_ball_players_output.mp4"

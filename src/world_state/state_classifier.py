@@ -1,12 +1,19 @@
 from pathlib import Path
+import sys
 
 import cv2
 import joblib
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-MODEL_PATH = PROJECT_ROOT / "fifa_state_classifier.pkl"
-LABELS_PATH = PROJECT_ROOT / "fifa_state_labels.pkl"
+SRC_ROOT = PROJECT_ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+from config.model_paths import STATE_CLASSIFIER_LABELS_PATH, STATE_CLASSIFIER_MODEL_PATH
+
+MODEL_PATH = STATE_CLASSIFIER_MODEL_PATH
+LABELS_PATH = STATE_CLASSIFIER_LABELS_PATH
 
 
 class GameStateClassifier:

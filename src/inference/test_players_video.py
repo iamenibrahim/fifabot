@@ -2,6 +2,7 @@ from ultralytics import YOLO
 import os
 from collections import Counter
 from pathlib import Path
+import sys
 
 import torch
 import torch.nn as nn
@@ -12,6 +13,11 @@ from torch.utils.data import DataLoader, random_split
 from sklearn.metrics import classification_report
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+SRC_ROOT = PROJECT_ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+from config.model_paths import BALL_MODEL_PATH, PLAYER_MODEL_PATH
 
 DATASET_DIR = PROJECT_ROOT / "dataset"
 MODEL_PATH = PROJECT_ROOT / "fifa_resnet_state_classifier.pth"
@@ -132,7 +138,7 @@ torch.save({
 }, MODEL_PATH)
 
 print("Saved:", MODEL_PATH)
-MODEL_PATH = PROJECT_ROOT / "runs" / "detect" / "player_detector_v1-6" / "weights" / "best.pt"
+MODEL_PATH = PLAYER_MODEL_PATH
 VIDEO_PATH = PROJECT_ROOT / "EA SPORTS FIFA 15 2026-05-27 18-28-58.mp4"
 
 model = YOLO(str(MODEL_PATH))
@@ -146,7 +152,7 @@ model.track(
     show=True,
     persist=True
 )
-model2 = YOLO(str(PROJECT_ROOT / "yolov8n.pt"))
+model2 = YOLO(str(BALL_MODEL_PATH))
 
 model2.train(
     data=str(PROJECT_ROOT / "configs" / "ball.yaml"),

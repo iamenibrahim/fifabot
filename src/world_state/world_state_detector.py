@@ -2,19 +2,21 @@ import cv2
 import json
 import math
 import numpy as np
+import sys
 from pathlib import Path
 from ultralytics import YOLO
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+SRC_ROOT = PROJECT_ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+from config.model_paths import BALL_MODEL_PATH, INDICATOR_MODEL_PATH, PLAYER_MODEL_PATH
 
 
 # =========================
 # PATHS — CHANGE THESE
 # =========================
-
-BALL_MODEL_PATH = PROJECT_ROOT / "runs" / "detect" / "ball_v3" / "weights" / "best.pt"
-PLAYER_MODEL_PATH = PROJECT_ROOT / "runs" / "detect" / "player_detector_v1-6" / "weights" / "best.pt"
-INDICATOR_MODEL_PATH = PROJECT_ROOT / "runs" / "detect" / "indicator_v1" / "weights" / "best.pt"
 
 VIDEO_PATH = PROJECT_ROOT / "EA SPORTS FIFA 15 2026-05-27 18-28-58.mp4"
 

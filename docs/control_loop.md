@@ -25,11 +25,14 @@ ball, the policy presses `B` as a basic placeholder action.
 ## Existing Models Used
 
 - Ball detector: `runs/detect/ball_v3/weights/best.pt`
-- Player detector: `runs/detect/player_detector_v1-6/weights/best.pt`
+- Player detector: `runs/detect/player_detector_v1-5/weights/best.pt`
 - Controlled-player indicator detector:
   `runs/detect/indicator_v1/weights/best.pt`
 - Game-state classifier: `fifa_state_classifier.pkl` and
   `fifa_state_labels.pkl`
+
+See `docs/model_selection.md` for the saved validation metrics used to choose
+these models.
 
 ## Install Dependencies
 
