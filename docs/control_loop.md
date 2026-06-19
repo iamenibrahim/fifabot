@@ -34,6 +34,11 @@ ball, the policy presses `B` as a basic placeholder action.
 See `docs/model_selection.md` for the saved validation metrics used to choose
 these models.
 
+The live loop uses the same high-resolution ball inference settings as the
+standalone Kalman ball tracker: `imgsz=928`, `conf=0.40`. This is slower than
+`imgsz=320`, but the ball is small enough that the lower resolution can miss it
+or jump between false positives.
+
 ## Install Dependencies
 
 Install the Python dependencies:

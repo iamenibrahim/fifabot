@@ -28,11 +28,13 @@ OUTPUT_JSONL = PROJECT_ROOT / "results" / "metrics" / "world_state_output.jsonl"
 # SETTINGS
 # =========================
 
-BALL_CONF = 0.25
+BALL_CONF = 0.40
 PLAYER_CONF = 0.25
 INDICATOR_CONF = 0.25
 
-BALL_IMGSZ = 320
+# The ball is tiny in FIFA footage. The standalone ball tracker performed
+# better at this larger inference size than the old live-loop value of 320.
+BALL_IMGSZ = 928
 PLAYER_IMGSZ = 320
 INDICATOR_IMGSZ = 416
 
@@ -40,7 +42,7 @@ SHOW_VIDEO = True
 SAVE_VIDEO = True
 SAVE_JSONL = True
 
-MAX_BALL_MISSED_FRAMES = 12
+MAX_BALL_MISSED_FRAMES = 15
 
 
 # =========================

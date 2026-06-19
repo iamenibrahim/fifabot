@@ -16,6 +16,11 @@ detector based on saved YOLO `results.csv` files.
 its run folder. It is not selected until it is validated and beats
 `player_detector_v1-5`.
 
+The selected ball weights are only part of the tracking behavior. Runtime
+inference size also matters because the ball is very small. The live loop uses
+`ball_v3` with `imgsz=928` and `conf=0.40`, matching the standalone ball tracker
+settings that were more reliable than the original live-loop `imgsz=320`.
+
 ## Current Game-State Selection
 
 The live bot uses the existing `fifa_state_classifier.pkl` with
