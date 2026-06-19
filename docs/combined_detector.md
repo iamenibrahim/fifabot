@@ -57,13 +57,23 @@ Train the combined YOLOv8 detector:
 py src/training/train_fifa_objects.py
 ```
 
-The training constants are near the top of
-`src/training/train_fifa_objects.py`:
+For a quick CPU smoke test, run one epoch with no dataloader subprocesses:
+
+```bash
+py src/training/train_fifa_objects.py --epochs 1 --batch 2 --workers 0 --name fifa_objects_smoke
+```
+
+The training defaults are near the top of `src/training/train_fifa_objects.py`
+and can also be overridden from the command line:
 
 - `EPOCHS`
 - `IMGSZ`
 - `BATCH`
+- `WORKERS`
 - `RUN_NAME`
+
+On Windows CPU training, `--workers 0` is the safest default because it avoids
+dataloader subprocess issues.
 
 Training output is expected at:
 
