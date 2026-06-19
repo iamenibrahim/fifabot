@@ -7,11 +7,40 @@ from world_state import world_state_detector as detector
 
 
 WINDOW_NAME = "FIFA Bot Control Loop"
+MAX_CONTROLLED_PLAYER_MISSES = 10
+
+
+class ControlledPlayerMemory:
+    def __init__(self):
+        self.last_center = None
+        self.missed_frames = 0
+
+    def update(self, controlled_player, player_detections):
+        if controlled_player is not None:
+            self.last_center = controlled_player["center"]
+            self.missed_frames = 0
+            return controlled_player
+
+        if self.last_center is None or not player_detections:
+            return None
+
+        self.missed_frames += 1
+        if self.missed_frames > MAX_CONTROLLED_PLAYER_MISSES:
+            self.last_center = None
+            return None
+
+        fallback = min(
+            player_detections,
+            key=lambda player: detector.distance(self.last_center, player["center"]),
+        )
+        self.last_center = fallback["center"]
+        return fallback
 
 
 def build_world_state(
     frame,
     ball_tracker,
+    controlled_player_memory: ControlledPlayerMemory,
     state_classifier: GameStateClassifier,
     frame_id: int,
     fps: float,
@@ -61,6 +90,10 @@ def build_world_state(
     selected_indicator = detector.choose_best_detection(indicator_detections)
     controlled_player = detector.find_controlled_player(
         selected_indicator,
+        player_detections,
+    )
+    controlled_player = controlled_player_memory.update(
+        controlled_player,
         player_detections,
     )
     nearest_player_to_ball = detector.find_nearest_player_to_ball(
@@ -122,14 +155,21 @@ def draw_debug_overlay(frame, world_state: dict, action: dict):
             bx, by = ball_position
             cv2.line(frame, (int(cx), int(cy)), (int(bx), int(by)), (0, 255, 255), 2)
 
+    indicator = world_state.get("indicator")
+    if indicator is not None:
+        detector.draw_box(frame, indicator, "INDICATOR", (0, 165, 255), 2)
+
     status = (
         f"stick=({action['left_stick_x']:.2f}, {action['left_stick_y']:.2f}) "
         f"B={int(action['press_b'])} "
         f"ball={world_state['ball']['source']} "
-        f"state={game_state.get('state', 'unknown')}"
+        f"state={game_state.get('state', 'unknown')} "
+        f"players={world_state['counts']['player_detections']} "
+        f"ind={world_state['counts']['indicator_detections']} "
+        f"ctrl={int(controlled_player is not None)}"
     )
 
-    cv2.rectangle(frame, (20, 20), (760, 68), (0, 0, 0), -1)
+    cv2.rectangle(frame, (20, 20), (1160, 68), (0, 0, 0), -1)
     cv2.putText(
         frame,
         status,
@@ -148,6 +188,7 @@ def main():
     try:
         cap = cv2.VideoCapture(str(detector.VIDEO_PATH))
         ball_tracker = detector.BallKalman()
+        controlled_player_memory = ControlledPlayerMemory()
         state_classifier = GameStateClassifier()
 
         if not cap.isOpened():
@@ -165,6 +206,7 @@ def main():
             world_state = build_world_state(
                 frame,
                 ball_tracker,
+                controlled_player_memory,
                 state_classifier,
                 frame_id,
                 fps,

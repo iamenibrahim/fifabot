@@ -39,6 +39,13 @@ standalone Kalman ball tracker: `imgsz=928`, `conf=0.40`. This is slower than
 `imgsz=320`, but the ball is small enough that the lower resolution can miss it
 or jump between false positives.
 
+Player detection runs at `conf=0.10` in the control loop to keep enough player
+boxes available for controlled-player pairing. The controlled-player match is
+chosen by scoring alignment between the detected player indicator and nearby
+player boxes. The live bot also keeps short-term controlled-player memory for a
+few frames, so a brief indicator miss does not immediately drop the selected
+player.
+
 ## Install Dependencies
 
 Install the Python dependencies:

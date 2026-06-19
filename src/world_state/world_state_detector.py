@@ -29,7 +29,7 @@ OUTPUT_JSONL = PROJECT_ROOT / "results" / "metrics" / "world_state_output.jsonl"
 # =========================
 
 BALL_CONF = 0.40
-PLAYER_CONF = 0.25
+PLAYER_CONF = 0.10
 INDICATOR_CONF = 0.25
 
 # The ball is tiny in FIFA footage. The standalone ball tracker performed
@@ -153,11 +153,9 @@ def find_controlled_player(indicator_detection, player_detections):
     """
     Pair the player indicator with the correct player box.
 
-    Better logic:
-    - Indicator should be above the player.
-    - Player top-center should be close horizontally to indicator center.
-    - Player top should be below the indicator.
-    - Penalize huge boxes that accidentally cover multiple players.
+    This uses soft penalties instead of hard cutoffs. The indicator and player
+    boxes move around a lot in FIFA footage, so hard geometry thresholds can
+    drop the controlled player even when the correct player box is present.
     """
 
     if indicator_detection is None or not player_detections:
@@ -183,19 +181,18 @@ def find_controlled_player(indicator_detection, player_detections):
         horizontal_dist = abs(player_top_x - ix)
         vertical_gap = player_top_y - indicator_bottom_y
 
-        # Must be below indicator
-        if vertical_gap < -20:
-            continue
+        if vertical_gap < -35:
+            vertical_penalty = 400 + abs(vertical_gap) * 4
+        elif vertical_gap > 260:
+            vertical_penalty = 250 + (vertical_gap - 260) * 2
+        else:
+            vertical_penalty = vertical_gap * 0.8
 
-        # Too far below indicator
-        if vertical_gap > 220:
-            continue
+        if horizontal_dist > 180:
+            horizontal_penalty = 250 + (horizontal_dist - 180) * 3
+        else:
+            horizontal_penalty = horizontal_dist * 2.0
 
-        # Too far sideways
-        if horizontal_dist > 120:
-            continue
-
-        # Penalize giant boxes that likely cover multiple players
         size_penalty = 0
         if box_h > 220:
             size_penalty += 250
@@ -204,12 +201,8 @@ def find_controlled_player(indicator_detection, player_detections):
         if box_area > 25000:
             size_penalty += 250
 
-        # Prefer close horizontal alignment and reasonable vertical gap
-        score = (
-            horizontal_dist * 2.0 +
-            vertical_gap * 0.8 +
-            size_penalty
-        )
+        confidence_bonus = player["confidence"] * 40
+        score = horizontal_penalty + vertical_penalty + size_penalty - confidence_bonus
 
         if score < best_score:
             best_score = score
