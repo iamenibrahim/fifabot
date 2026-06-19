@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Local IDE files
+.vscode/
+
+# Large local assets
+models/
+data/
+*.pt
+*.pth
+*.pkl
+*.onnx
+*.engine
+*.openvino/
+*.mp4
+*.mkv
+*.avi
+*.mov
+*.zip
+
+# Datasets and generated frame dumps
+dataset/
+ball_dataset/
+player_dataset/
+indicator_dataset/
+frames/
+frames*/
+live_captures/
+saved clips (TRAINING)/
+saved_clips_TRAINING/
+CV/
+
+# YOLO and generated outputs
+runs/
+results/videos/
+results/metrics/*.jsonl
+
+# Local labels are data artifacts; keep them out unless explicitly curated.
+labels.csv

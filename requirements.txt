@@ -1,0 +1,9 @@
+opencv-python
+numpy
+ultralytics
+torch
+torchvision
+scikit-learn
+joblib
+pillow
+mss
