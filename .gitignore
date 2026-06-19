@@ -31,6 +31,7 @@ dataset/
 ball_dataset/
 player_dataset/
 indicator_dataset/
+fifa_objects_dataset/
 frames/
 frames*/
 live_captures/
