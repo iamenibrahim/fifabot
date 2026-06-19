@@ -41,6 +41,7 @@ CV/
 
 # YOLO and generated outputs
 runs/
+configs/fifa_objects.runtime.yaml
 results/videos/
 results/metrics/*.jsonl
 

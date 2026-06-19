@@ -1,4 +1,4 @@
-path: ../fifa_objects_dataset
+path: I:/FIFA files/fifabot/fifa_objects_dataset
 train: images/train
 val: images/val
 
