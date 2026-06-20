@@ -6,7 +6,10 @@ from ultralytics import YOLO
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-MODEL_PATH = PROJECT_ROOT / "runs" / "detect" / "fifa_objects_v1" / "weights" / "best.pt"
+MODEL_CANDIDATES = [
+    PROJECT_ROOT / "runs" / "detect" / "fifa_objects_v1" / "weights" / "best.pt",
+    PROJECT_ROOT / "best.pt",
+]
 VIDEO_PATH = PROJECT_ROOT / "EA SPORTS FIFA 15 2026-05-27 18-28-58.mp4"
 CONFIDENCE = 0.25
 IMGSZ = 640
@@ -40,13 +43,16 @@ def draw_detection(frame, box, names):
 
 
 def main():
-    if not MODEL_PATH.exists():
+    model_path = next((path for path in MODEL_CANDIDATES if path.exists()), None)
+    if model_path is None:
         raise FileNotFoundError(
-            f"Combined model not found: {MODEL_PATH}. "
+            "Combined model not found. Expected one of: "
+            f"{', '.join(str(path) for path in MODEL_CANDIDATES)}. "
             "Train it with src/training/train_fifa_objects.py first."
         )
 
-    model = YOLO(str(MODEL_PATH))
+    print(f"Using combined model: {model_path}")
+    model = YOLO(str(model_path))
     cap = cv2.VideoCapture(str(VIDEO_PATH))
 
     if not cap.isOpened():
