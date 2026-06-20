@@ -30,6 +30,7 @@ COMBINED_MODEL_CANDIDATES = [
 COMBINED_CONF = 0.25
 COMBINED_IMGSZ = 640
 MAX_CONTROLLED_PLAYER_MISSES = 12
+INDICATOR_PLAYER_Y_OFFSET = 90
 
 
 class ControlledPlayerMemory:
@@ -106,6 +107,33 @@ def detection_from_box(box):
         "center": separate_detector.bbox_center(bbox),
         "bottom_center": separate_detector.bbox_bottom_center(bbox),
         "top_center": separate_detector.bbox_top_center(bbox),
+    }
+
+
+def estimate_controlled_player_from_indicator(indicator_detection):
+    if indicator_detection is None:
+        return None
+
+    ix, _ = indicator_detection["center"]
+    ix1, iy1, ix2, iy2 = indicator_detection["bbox"]
+    width = max(32, ix2 - ix1)
+    player_height = max(90, width * 3)
+    center_y = iy2 + INDICATOR_PLAYER_Y_OFFSET
+
+    x1 = int(ix - width)
+    x2 = int(ix + width)
+    y1 = int(center_y - player_height / 2)
+    y2 = int(center_y + player_height / 2)
+    bbox = (x1, y1, x2, y2)
+
+    return {
+        "class_id": 0,
+        "confidence": float(indicator_detection["confidence"]),
+        "bbox": bbox,
+        "center": separate_detector.bbox_center(bbox),
+        "bottom_center": separate_detector.bbox_bottom_center(bbox),
+        "top_center": separate_detector.bbox_top_center(bbox),
+        "source": "indicator_estimate",
     }
 
 
@@ -196,6 +224,9 @@ def build_world_state(
         selected_indicator,
         player_detections,
     )
+    if controlled_player is None and selected_indicator is not None:
+        controlled_player = estimate_controlled_player_from_indicator(selected_indicator)
+
     controlled_player = controlled_memory.update(controlled_player, player_detections)
 
     return {
@@ -235,7 +266,8 @@ def draw_debug(frame, world_state, action, paused, loop_fps, detector_name):
     if indicator is not None:
         separate_detector.draw_box(frame, indicator, "IND", (0, 165, 255), 2)
     if controlled_player is not None:
-        separate_detector.draw_box(frame, controlled_player, "BOT", (255, 0, 255), 3)
+        label = "BOT_EST" if controlled_player.get("source") == "indicator_estimate" else "BOT"
+        separate_detector.draw_box(frame, controlled_player, label, (255, 0, 255), 3)
         if ball_position is not None:
             cx, cy = controlled_player["center"]
             bx, by = ball_position

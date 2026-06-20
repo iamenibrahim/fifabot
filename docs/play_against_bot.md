@@ -77,6 +77,11 @@ The overlay shows:
 If `ind=0`, the indicator is not being detected. If `ctrl=0`, the bot does not
 currently know which player it controls.
 
+If `players=0` but `ind>0`, the play-against bot estimates the controlled
+player position from the indicator and labels it `BOT_EST`. This lets the bot
+still move while the player detector is weak, but improving/retraining the
+combined detector is the better long-term fix.
+
 ## Safety
 
 The controller is reset in a `finally` block on exit. If anything feels wrong,
