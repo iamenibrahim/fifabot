@@ -1,3 +1,4 @@
+import argparse
 import sys
 import time
 from pathlib import Path
@@ -61,9 +62,28 @@ class ControlledPlayerMemory:
         return fallback
 
 
-def load_combined_model():
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--detector",
+        choices=("auto", "combined", "separate"),
+        default="auto",
+        help="Choose object detector pipeline. Use 'separate' if combined best.pt misses players/indicator.",
+    )
+    return parser.parse_args()
+
+
+def load_combined_model(detector_mode):
+    if detector_mode == "separate":
+        return None
+
     model_path = next((path for path in COMBINED_MODEL_CANDIDATES if path.exists()), None)
     if model_path is None:
+        if detector_mode == "combined":
+            raise FileNotFoundError(
+                "Combined detector requested but no combined weights were found. "
+                f"Expected one of: {', '.join(str(path) for path in COMBINED_MODEL_CANDIDATES)}"
+            )
         return None
     print(f"Using combined detector: {model_path}")
     return YOLO(str(model_path))
@@ -205,7 +225,7 @@ def build_world_state(
     }
 
 
-def draw_debug(frame, world_state, action, paused, loop_fps):
+def draw_debug(frame, world_state, action, paused, loop_fps, detector_name):
     ball_position = world_state["ball"]["position"]
     controlled_player = world_state["controlled_player"]
     indicator = world_state["indicator"]
@@ -223,6 +243,7 @@ def draw_debug(frame, world_state, action, paused, loop_fps):
 
     status = (
         f"{'PAUSED' if paused else 'RUNNING'} | "
+        f"det={detector_name} | "
         f"fps={loop_fps:.1f} | "
         f"state={world_state['game_state'].get('state', 'unknown')} | "
         f"stick=({action['left_stick_x']:.2f},{action['left_stick_y']:.2f}) | "
@@ -244,7 +265,9 @@ def draw_debug(frame, world_state, action, paused, loop_fps):
 
 
 def main():
-    detector_model = load_combined_model()
+    args = parse_args()
+    detector_model = load_combined_model(args.detector)
+    detector_name = "combined" if detector_model is not None else "separate"
     if detector_model is None:
         print("Combined detector not found. Falling back to separate detectors.")
 
@@ -280,7 +303,7 @@ def main():
 
                 action = neutral_action() if paused else decide_play_against_action(world_state)
                 controller.apply_action(action)
-                draw_debug(frame, world_state, action, paused, loop_fps)
+                draw_debug(frame, world_state, action, paused, loop_fps, detector_name)
 
                 cv2.imshow(WINDOW_NAME, frame)
                 key = cv2.waitKey(1) & 0xFF

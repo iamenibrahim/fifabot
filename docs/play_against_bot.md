@@ -49,6 +49,13 @@ controller. Then run:
 py src/main_play_against_bot.py
 ```
 
+If the combined detector sees the ball but does not reliably find the controlled
+player, force the older separate detectors:
+
+```powershell
+py src/main_play_against_bot.py --detector separate
+```
+
 Controls:
 
 - `p`: pause/resume controller output
